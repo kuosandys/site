@@ -1,0 +1,8 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+const { experiment } = Astro.props;
+---
+
+<BaseLayout pageName={`${experiment} | Experiments`}>
+  <slot />
+</BaseLayout>

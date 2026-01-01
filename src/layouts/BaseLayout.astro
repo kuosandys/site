@@ -28,7 +28,7 @@ const { pageName } = Astro.props;
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@500&display=block"
       rel="stylesheet"
     />
-    <title>{`Sandy S. Kuo${pageName ? ` | ${pageName}` : ""}`}</title>
+    <title>{`${pageName ? `${pageName} | ` : ""}Sandy S. Kuo`}</title>
   </head>
   <body>
     <Header />
@@ -44,5 +44,6 @@ const { pageName } = Astro.props;
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
+    position: relative;
   }
 </style>
