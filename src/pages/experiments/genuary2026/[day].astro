@@ -1,6 +1,10 @@
 ---
 import ExperimentLayout from "../../../layouts/ExperimentLayout.astro";
 
+const prompts: Record<string, string> = {
+  "01": "One color, one shape",
+};
+
 export async function getStaticPaths() {
   const modules = import.meta.glob("../../../modules/genuary2026/*.ts");
   return Object.keys(modules).map((path) => {
@@ -10,10 +14,12 @@ export async function getStaticPaths() {
 }
 
 const { day } = Astro.params;
+const prompt = prompts[day ?? ""];
 ---
 
 <ExperimentLayout experiment={`${day} | Genuary 2026`}>
   <div id="sketch-container" class="sketch-wrapper" data-day={day}></div>
+  {prompt && <p class="prompt">"{prompt}"</p>}
 </ExperimentLayout>
 
 <script>
@@ -25,9 +31,11 @@ const { day } = Astro.params;
 
   function calculateCanvasSize(): number {
     if (!container) return 0;
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    return Math.min(containerWidth, containerHeight);
+    const parent = container.parentElement;
+    const containerWidth =
+      parent?.clientWidth || container.clientWidth || window.innerWidth;
+    const maxSize = Math.min(containerWidth, 800);
+    return maxSize;
   }
 
   async function loadSketch(dayId: string) {
@@ -99,10 +107,15 @@ const { day } = Astro.params;
 
 <style>
   .sketch-wrapper {
-    height: 100%;
-    width: 100%;
     display: flex;
     justify-content: center;
     align-items: start;
+    width: 100%;
+    height: auto;
+  }
+
+  .prompt {
+    text-align: center;
+    font-style: italic;
   }
 </style>
