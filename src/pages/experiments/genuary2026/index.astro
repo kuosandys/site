@@ -1,0 +1,22 @@
+---
+import ExperimentLayout from "../../../layouts/ExperimentLayout.astro";
+
+const modules = import.meta.glob("../../../modules/genuary2026/*.ts");
+const days = Object.keys(modules)
+  .map((path) => path.split("/").pop()?.replace(".ts", ""))
+  .filter((day): day is string => /^\d{2}$/.test(day ?? ""))
+  .sort();
+---
+
+<ExperimentLayout experiment="Genuary 2026">
+  <h1>Genuary 2026</h1>
+  <ul>
+    {
+      days.map((day) => (
+        <li>
+          <a href={`/experiments/genuary2026/${day}`}>{day}</a>
+        </li>
+      ))
+    }
+  </ul>
+</ExperimentLayout>

@@ -1,0 +1,108 @@
+---
+import ExperimentLayout from "../../../layouts/ExperimentLayout.astro";
+
+export async function getStaticPaths() {
+  const modules = import.meta.glob("../../../modules/genuary2026/*.ts");
+  return Object.keys(modules).map((path) => {
+    const day = path.split("/").pop()?.replace(".ts", "");
+    return { params: { day } };
+  });
+}
+
+const { day } = Astro.params;
+---
+
+<ExperimentLayout experiment={`${day} | Genuary 2026`}>
+  <div id="sketch-container" class="sketch-wrapper" data-day={day}></div>
+</ExperimentLayout>
+
+<script>
+  import p5 from "p5";
+
+  let p5Instance: p5 | null = null;
+  let currentSketch: Record<string, any> | null = null;
+  let container: HTMLElement | null = null;
+
+  function calculateCanvasSize(): number {
+    if (!container) return 0;
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    return Math.min(containerWidth, containerHeight);
+  }
+
+  async function loadSketch(dayId: string) {
+    if (!p5Instance) return;
+
+    if (currentSketch?.cleanup) {
+      currentSketch.cleanup(p5Instance);
+    }
+
+    let module: Record<string, any>;
+    try {
+      module = await import(`../../../modules/genuary2026/${dayId}.ts`);
+    } catch (error) {
+      console.error(`Failed to load sketch for day ${dayId}:`, error);
+      return;
+    }
+
+    currentSketch = module;
+
+    for (const [key, value] of Object.entries(module)) {
+      if (key === "default" || typeof value !== "function") continue;
+
+      if (key === "setup") {
+        value(p5Instance);
+      } else {
+        (p5Instance as any)[key] = () => value(p5Instance);
+      }
+    }
+  }
+
+  function initializeSketch() {
+    container = document.getElementById("sketch-container");
+    if (!container) return;
+
+    const dayId = container.dataset.day;
+    if (!dayId) return;
+
+    const size = calculateCanvasSize();
+    p5Instance = new p5((sketch: p5) => {
+      p5Instance = sketch;
+
+      sketch.setup = () => {
+        const canvas = sketch.createCanvas(size, size);
+        canvas.parent("sketch-container");
+
+        loadSketch(dayId);
+      };
+
+      sketch.windowResized = () => {
+        const newSize = calculateCanvasSize();
+        sketch.resizeCanvas(newSize, newSize);
+      };
+    }, container);
+
+    let resizeTimeout: number;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = window.setTimeout(() => {
+        if (p5Instance) {
+          const newSize = calculateCanvasSize();
+          p5Instance.resizeCanvas(newSize, newSize);
+        }
+      }, 250);
+    });
+  }
+
+  initializeSketch();
+</script>
+
+<style>
+  .sketch-wrapper {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: start;
+  }
+</style>
