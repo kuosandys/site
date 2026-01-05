@@ -1,13 +1,6 @@
 ---
 import ExperimentLayout from "../../../layouts/ExperimentLayout.astro";
 
-const prompts: Record<string, string> = {
-  "01": "One color, one shape",
-  "02": "12 principles of animation",
-  "03": "Fibonacci sequence",
-  "04": "Lowres",
-};
-
 export async function getStaticPaths() {
   const modules = import.meta.glob("../../../modules/genuary2026/*.ts");
   return Object.keys(modules).map((path) => {
@@ -17,12 +10,11 @@ export async function getStaticPaths() {
 }
 
 const { day } = Astro.params;
-const prompt = prompts[day ?? ""];
 ---
 
 <ExperimentLayout experiment={`${day} | Genuary 2026`}>
   <div id="sketch-container" class="sketch-wrapper" data-day={day}></div>
-  {prompt && <p class="prompt">"{prompt}"</p>}
+  <p id="prompt" class="prompt"></p>
 </ExperimentLayout>
 
 <script>
@@ -57,6 +49,11 @@ const prompt = prompts[day ?? ""];
     }
 
     currentSketch = module;
+
+    const promptElement = document.getElementById("prompt");
+    if (promptElement && module.prompt) {
+      promptElement.textContent = `"${module.prompt}"`;
+    }
 
     for (const [key, value] of Object.entries(module)) {
       if (key === "default" || typeof value !== "function") continue;

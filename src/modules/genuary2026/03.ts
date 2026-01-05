@@ -1,5 +1,7 @@
 import type p5 from "p5";
 
+export const prompt = "Fibonacci sequence";
+
 function fibonacci(count: number): number[] {
   const fib: number[] = [1, 1];
   for (let i = 2; i < count; i++) {

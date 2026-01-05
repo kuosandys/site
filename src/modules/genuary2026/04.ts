@@ -1,5 +1,7 @@
 import type p5 from "p5";
 
+export const prompt = "Lowres";
+
 let img: p5.Image | null = null;
 
 export function setup(sketch: p5) {

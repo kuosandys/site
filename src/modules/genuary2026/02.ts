@@ -1,5 +1,7 @@
 import type p5 from "p5";
 
+export const prompt = "12 principles of animation";
+
 let lastDrawnSliceIndex = -1;
 
 export function setup(sketch: p5) {

@@ -1,5 +1,7 @@
 import type p5 from "p5";
 
+export const prompt = "One color, one shape";
+
 interface Point {
   x: number;
   y: number;
