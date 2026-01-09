@@ -130,19 +130,16 @@ function selectDiagonals(
   count: number,
 ): number[] {
   const diagonals: number[] = [];
-  const validRange = gridSize - 2;
+  const spacing = 4;
+  const totalSpan = (count - 1) * spacing;
+  const maxStart = 2 * gridSize - 2 - totalSpan;
+  const minStart = 0;
+
+  let current = Math.floor(sketch.random(minStart, maxStart));
 
   for (let k = 0; k < count; k++) {
-    let randomOffset = Math.floor(sketch.random(validRange));
-    let attempts = 0;
-    while (
-      attempts < 10 &&
-      diagonals.some((d) => Math.abs(d - (gridSize - 1 + randomOffset)) <= 1)
-    ) {
-      randomOffset = Math.floor(sketch.random(validRange));
-      attempts++;
-    }
-    diagonals.push(gridSize - 1 + randomOffset);
+    diagonals.push(current);
+    current += spacing;
   }
   return diagonals;
 }
@@ -154,31 +151,47 @@ function selectNonIntersectingDiagonals(
   count: number,
 ): number[] {
   const diagonals: number[] = [];
-  const validRange = gridSize - 2;
+  const spacing = 4;
 
-  for (let k = 0; k < count; k++) {
-    let randomOffset = Math.floor(sketch.random(validRange));
-    let attempts = 0;
-    while (attempts < 50) {
-      const currentDiagonal = -randomOffset;
-      const intersects = existing.some((existingDiagonal) => {
-        if ((existingDiagonal + currentDiagonal) % 2 === 0) {
-          const intersectI = (existingDiagonal + currentDiagonal) / 2;
-          const intersectJ = (existingDiagonal - currentDiagonal) / 2;
-          return (
-            intersectI >= 0 &&
-            intersectI < gridSize &&
-            intersectJ >= 0 &&
-            intersectJ < gridSize
-          );
-        }
-        return false;
-      });
-      if (!intersects && !diagonals.includes(currentDiagonal)) break;
-      randomOffset = (randomOffset + 1) % validRange;
-      attempts++;
+  const min = -(gridSize - 1);
+  const max = gridSize - 1;
+
+  let current = 0;
+  current = Math.floor(sketch.random(min, max - count * spacing));
+
+  let attempts = 0;
+  while (diagonals.length < count && attempts < 200) {
+    let intersects = false;
+    for (const d1 of existing) {
+      const sum = d1 + current;
+      if (sum % 2 !== 0) continue;
+
+      const i = sum / 2;
+      const j = (d1 - current) / 2;
+
+      if (i >= 0 && i < gridSize && j >= 0 && j < gridSize) {
+        intersects = true;
+        break;
+      }
     }
-    diagonals.push(-randomOffset);
+
+    let spacedCorrectly = true;
+    if (diagonals.length > 0) {
+      const last = diagonals[diagonals.length - 1];
+      if (current - last < spacing) spacedCorrectly = false;
+    }
+
+    if (!intersects && spacedCorrectly) {
+      diagonals.push(current);
+      current += spacing;
+    } else {
+      current++;
+    }
+
+    if (current > max) {
+      current = min;
+    }
+    attempts++;
   }
   return diagonals;
 }
@@ -221,46 +234,62 @@ function drawDiagonalBlock(
   const coords = mirrored
     ? {
         h1: [
-          diagonalGap,
+          diagonalGap + cornerCut,
           0,
           blockSize - cornerCut,
           0,
           blockSize,
           cornerCut,
           blockSize,
-          blockSize - diagonalGap,
+          blockSize - diagonalGap - cornerCut,
+          blockSize - cornerCut,
+          blockSize - diagonalGap - cornerCut,
+          diagonalGap + cornerCut,
+          cornerCut,
         ],
         h2: [
           0,
-          diagonalGap,
-          blockSize - diagonalGap,
-          blockSize,
-          cornerCut,
-          blockSize,
+          diagonalGap + cornerCut,
           0,
           blockSize - cornerCut,
+          cornerCut,
+          blockSize,
+          blockSize - diagonalGap - cornerCut,
+          blockSize,
+          blockSize - diagonalGap - cornerCut,
+          blockSize - cornerCut,
+          cornerCut,
+          diagonalGap + cornerCut,
         ],
       }
     : {
         h1: [
           cornerCut,
           0,
-          blockSize - diagonalGap,
+          blockSize - diagonalGap - cornerCut,
           0,
+          blockSize - diagonalGap - cornerCut,
+          cornerCut,
+          cornerCut,
+          blockSize - diagonalGap - cornerCut,
           0,
-          blockSize - diagonalGap,
+          blockSize - diagonalGap - cornerCut,
           0,
           cornerCut,
         ],
         h2: [
           blockSize,
-          diagonalGap,
+          diagonalGap + cornerCut,
           blockSize,
           blockSize - cornerCut,
           blockSize - cornerCut,
           blockSize,
-          diagonalGap,
+          diagonalGap + cornerCut,
           blockSize,
+          diagonalGap + cornerCut,
+          blockSize - cornerCut,
+          blockSize - cornerCut,
+          diagonalGap + cornerCut,
         ],
       };
 
@@ -268,55 +297,82 @@ function drawDiagonalBlock(
   const holeCoords = mirrored
     ? {
         h1: [
-          diagonalGap + holeInset,
+          diagonalGap + holeInset + cornerCut,
+          holeThickness,
+          blockSize - holeThickness - cornerCut,
           holeThickness,
           blockSize - holeThickness,
-          holeThickness,
+          holeThickness + cornerCut,
           blockSize - holeThickness,
-          blockSize - diagonalGap - holeInset,
+          blockSize - diagonalGap - holeInset - cornerCut,
+          blockSize - holeThickness - cornerCut,
+          blockSize - diagonalGap - holeInset - cornerCut,
+          diagonalGap + holeInset + cornerCut,
+          holeThickness + cornerCut,
         ],
         h2: [
           holeThickness,
-          diagonalGap + holeInset,
-          blockSize - diagonalGap - holeInset,
-          blockSize - holeThickness,
+          diagonalGap + holeInset + cornerCut,
           holeThickness,
+          blockSize - holeThickness - cornerCut,
+          holeThickness + cornerCut,
           blockSize - holeThickness,
+          blockSize - diagonalGap - holeInset - cornerCut,
+          blockSize - holeThickness,
+          blockSize - diagonalGap - holeInset - cornerCut,
+          blockSize - holeThickness - cornerCut,
+          holeThickness + cornerCut,
+          diagonalGap + holeInset + cornerCut,
         ],
       }
     : {
         h1: [
+          holeThickness + cornerCut,
           holeThickness,
+          blockSize - diagonalGap - holeInset - cornerCut,
           holeThickness,
-          blockSize - diagonalGap - holeInset,
+          blockSize - diagonalGap - holeInset - cornerCut,
+          holeThickness + cornerCut,
+          holeThickness + cornerCut,
+          blockSize - diagonalGap - holeInset - cornerCut,
           holeThickness,
+          blockSize - diagonalGap - holeInset - cornerCut,
           holeThickness,
-          blockSize - diagonalGap - holeInset,
+          holeThickness + cornerCut,
         ],
         h2: [
           blockSize - holeThickness,
+          diagonalGap + holeInset + cornerCut,
           blockSize - holeThickness,
-          diagonalGap + holeInset,
+          blockSize - holeThickness - cornerCut,
+          blockSize - holeThickness - cornerCut,
           blockSize - holeThickness,
+          diagonalGap + holeInset + cornerCut,
           blockSize - holeThickness,
-          diagonalGap + holeInset,
+          diagonalGap + holeInset + cornerCut,
+          blockSize - holeThickness - cornerCut,
+          blockSize - holeThickness - cornerCut,
+          diagonalGap + holeInset + cornerCut,
         ],
       };
 
   for (const half of ["h1", "h2"] as const) {
-    const [x1, y1, x2, y2, x3, y3, x4, y4] = coords[half];
-    const [holeX1, holeY1, holeX2, holeY2, holeX3, holeY3] = holeCoords[half];
+    const currentCoords = coords[half];
+    const currentHoleCoords = holeCoords[half];
 
     sketch.fill(colors.block);
     sketch.beginShape();
-    sketch.vertex(x1, y1);
-    sketch.vertex(x2, y2);
-    sketch.vertex(x3, y3);
-    sketch.vertex(x4, y4);
+    for (let i = 0; i < currentCoords.length; i += 2) {
+      sketch.vertex(currentCoords[i], currentCoords[i + 1]);
+    }
     sketch.endShape(sketch.CLOSE);
 
     sketch.fill(colors.road);
-    sketch.triangle(holeX1, holeY1, holeX2, holeY2, holeX3, holeY3);
+    sketch.beginShape();
+    for (let i = 0; i < currentHoleCoords.length; i += 2) {
+      sketch.vertex(currentHoleCoords[i], currentHoleCoords[i + 1]);
+    }
+    sketch.endShape(sketch.CLOSE);
   }
 
   sketch.noStroke();
