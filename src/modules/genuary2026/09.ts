@@ -2,7 +2,7 @@ import type p5 from "p5";
 
 export const prompt = "Crazy automata";
 
-const gridSize = 50;
+const gridSize = 100;
 const combustionChance = 0.03;
 
 interface Cell {
@@ -14,20 +14,9 @@ interface Cell {
 }
 
 let grid: Cell[][] = [];
-let cellSize: number;
-let cols: number;
-let rows: number;
 
 export function setup(sketch: p5) {
-  sketch.createCanvas(sketch.width, sketch.height);
   sketch.frameRate(10);
-
-  cols = gridSize;
-  rows = gridSize;
-
-  cellSize = sketch.width / cols;
-  rows = Math.ceil(sketch.height / cellSize);
-
   initializeGrid(sketch);
 }
 
@@ -35,9 +24,9 @@ function initializeGrid(sketch: p5) {
   grid = [];
   const defaultColor = sketch.color(0, 0, 255);
 
-  for (let x = 0; x < cols; x++) {
+  for (let x = 0; x < gridSize; x++) {
     grid[x] = [];
-    for (let y = 0; y < rows; y++) {
+    for (let y = 0; y < gridSize; y++) {
       grid[x][y] = {
         alive: false,
         color: defaultColor,
@@ -48,26 +37,27 @@ function initializeGrid(sketch: p5) {
     }
   }
 
-  const midX = Math.floor(cols / 2);
-  const midY = Math.floor(rows / 2);
+  const midX = Math.floor(gridSize / 2);
+  const midY = Math.floor(gridSize / 2);
 
-  if (midX < cols && midY < rows) {
+  if (midX < gridSize && midY < gridSize) {
     grid[midX][midY].alive = true;
     grid[midX][midY].nextAlive = true;
   }
-  if (midX + 1 < cols && midY + 1 < rows) {
+  if (midX + 1 < gridSize && midY + 1 < gridSize) {
     grid[midX + 1][midY + 1].alive = true;
     grid[midX + 1][midY + 1].nextAlive = true;
   }
 }
 
 export function draw(sketch: p5) {
+  const cellSize = Math.ceil(sketch.width / gridSize);
   sketch.background(0);
   sketch.noFill();
   sketch.strokeWeight(2);
 
-  for (let x = 0; x < cols; x++) {
-    for (let y = 0; y < rows; y++) {
+  for (let x = 0; x < gridSize; x++) {
+    for (let y = 0; y < gridSize; y++) {
       const cell = grid[x][y];
       if (cell.alive) {
         sketch.stroke(cell.color);
@@ -89,8 +79,8 @@ function drawCell(sketch: p5, x: number, y: number, size: number) {
 function updateGrid(sketch: p5) {
   const defaultColor = sketch.color(0, 100, 255);
 
-  for (let x = 0; x < cols; x++) {
-    for (let y = 0; y < rows; y++) {
+  for (let x = 0; x < gridSize; x++) {
+    for (let y = 0; y < gridSize; y++) {
       const cell = grid[x][y];
       const neighbours = countNeighbours(x, y);
 
@@ -106,8 +96,8 @@ function updateGrid(sketch: p5) {
         for (let i = -1; i <= 1; i++) {
           for (let j = -1; j <= 1; j++) {
             if (i === 0 && j === 0) continue;
-            const col = (x + i + cols) % cols;
-            const row = (y + j + rows) % rows;
+            const col = (x + i + gridSize) % gridSize;
+            const row = (y + j + gridSize) % gridSize;
             if (grid[col][row].alive) {
               parents.push(grid[col][row].color);
             }
@@ -120,8 +110,8 @@ function updateGrid(sketch: p5) {
     }
   }
 
-  for (let x = 0; x < cols; x++) {
-    for (let y = 0; y < rows; y++) {
+  for (let x = 0; x < gridSize; x++) {
+    for (let y = 0; y < gridSize; y++) {
       const cell = grid[x][y];
 
       if (cell.alive && !cell.nextAlive) {
@@ -137,8 +127,8 @@ function updateGrid(sketch: p5) {
             for (let j = -1; j <= 1; j++) {
               if (i === 0 && j === 0) continue;
               neighbours.push({
-                x: (x + i + cols) % cols,
-                y: (y + j + rows) % rows,
+                x: (x + i + gridSize) % gridSize,
+                y: (y + j + gridSize) % gridSize,
               });
             }
           }
@@ -158,8 +148,8 @@ function updateGrid(sketch: p5) {
     }
   }
 
-  for (let x = 0; x < cols; x++) {
-    for (let y = 0; y < rows; y++) {
+  for (let x = 0; x < gridSize; x++) {
+    for (let y = 0; y < gridSize; y++) {
       grid[x][y].alive = grid[x][y].nextAlive;
       grid[x][y].color = grid[x][y].nextColor;
     }
@@ -171,8 +161,8 @@ function countNeighbours(x: number, y: number): number {
   for (let i = -1; i <= 1; i++) {
     for (let j = -1; j <= 1; j++) {
       if (i === 0 && j === 0) continue;
-      const col = (x + i + cols) % cols;
-      const row = (y + j + rows) % rows;
+      const col = (x + i + gridSize) % gridSize;
+      const row = (y + j + gridSize) % gridSize;
       if (grid[col][row].alive) {
         sum++;
       }
