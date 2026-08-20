@@ -5,6 +5,9 @@
   "repository": "https://github.com/kuosandys/site",
   "author": "Sandy S Kuo <62935115+kuosandys@users.noreply.github.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=22.19.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -14,19 +17,19 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.6",
-    "astro": "^5.5.4",
-    "d3": "^7.9.0",
-    "d3-geo": "^3.1.1",
-    "p5": "^2.1.2",
-    "topojson": "^3.0.2",
-    "typescript": "^5.9.3"
+    "@astrojs/check": "0.9.10",
+    "astro": "7.2.4",
+    "d3": "7.9.0",
+    "d3-geo": "3.1.1",
+    "p5": "2.1.2",
+    "topojson": "3.0.2",
+    "typescript": "5.9.3"
   },
   "devDependencies": {
-    "@types/d3": "^7.4.3",
-    "@types/d3-geo": "^3.1.0",
-    "@types/p5": "^1.7.7",
-    "@types/topojson": "^3.2.6",
-    "prettier-plugin-astro": "^0.14.1"
+    "@types/d3": "7.4.3",
+    "@types/d3-geo": "3.1.0",
+    "@types/p5": "1.7.7",
+    "@types/topojson": "3.2.6",
+    "prettier-plugin-astro": "0.14.1"
   }
 }
